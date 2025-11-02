@@ -14,9 +14,11 @@ public class Payment
     [MaxLength(100)]
     public string? LoadNumber { get; set; }
 
-    public DateTime? PurchaseDate { get; set; }
+    [MaxLength(50)]
+    public string? PurchaseDate { get; set; }
 
-    public DateTime? PaymentDate { get; set; }
+    [MaxLength(50)]
+    public string? PaymentDate { get; set; }
 
     [MaxLength(200)]
     public string? CheckNumber { get; set; }
@@ -39,5 +41,6 @@ public class Payment
     [MaxLength(100)]
     public string SheetName { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [MaxLength(50)]
+    public string? CreatedAt { get; set; }
 }

@@ -14,12 +14,14 @@ public class Spreadsheet
     [MaxLength(100)]
     public string? LoadId { get; set; }
 
-    public DateTime? PUDate { get; set; }
+    [MaxLength(50)]
+    public string? PUDate { get; set; }
 
     [MaxLength(300)]
     public string? Origin { get; set; }
 
-    public DateTime? DELDate { get; set; }
+    [MaxLength(50)]
+    public string? DELDate { get; set; }
 
     [MaxLength(300)]
     public string? Destination { get; set; }
@@ -45,5 +47,6 @@ public class Spreadsheet
 
     public string? AccountingNotes { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [MaxLength(50)]
+    public string? CreatedAt { get; set; }
 }

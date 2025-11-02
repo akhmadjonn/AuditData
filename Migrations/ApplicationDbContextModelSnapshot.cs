@@ -41,8 +41,9 @@ namespace AuditData.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("CreatedAt")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("DebtorName")
                         .HasMaxLength(300)
@@ -62,11 +63,13 @@ namespace AuditData.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime?>("PaymentDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("PaymentDate")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime?>("PurchaseDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("PurchaseDate")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("SheetName")
                         .IsRequired()
@@ -99,11 +102,13 @@ namespace AuditData.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("CreatedAt")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime?>("DELDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("DELDate")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Destination")
                         .HasMaxLength(300)
@@ -130,8 +135,9 @@ namespace AuditData.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
-                    b.Property<DateTime?>("PUDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("PUDate")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<decimal?>("PerMile")
                         .HasColumnType("numeric(18,2)");

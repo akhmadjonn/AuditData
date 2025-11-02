@@ -48,9 +48,9 @@ public class ExcelImportService
                     {
                         Broker = GetCellValue(worksheet, row, 2),
                         LoadId = GetCellValue(worksheet, row, 3),
-                        PUDate = GetDateValue(worksheet, row, 4),
+                        PUDate = GetDateStringValue(worksheet, row, 4),
                         Origin = GetCellValue(worksheet, row, 5),
-                        DELDate = GetDateValue(worksheet, row, 6),
+                        DELDate = GetDateStringValue(worksheet, row, 6),
                         Destination = GetCellValue(worksheet, row, 7),
                         Mileage = GetIntValue(worksheet, row, 8),
                         PerMile = GetDecimalValue(worksheet, row, 9),
@@ -60,7 +60,7 @@ public class ExcelImportService
                         InvoicedAmount = GetDecimalValue(worksheet, row, 13),
                         DispatchNotes = GetCellValue(worksheet, row, 14),
                         AccountingNotes = GetCellValue(worksheet, row, 15),
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
                     };
 
                     _context.Spreadsheets.Add(spreadsheet);
@@ -124,8 +124,8 @@ public class ExcelImportService
                         {
                             InvoiceNumber = invoiceNumber,
                             LoadNumber = GetCellValue(worksheet, row, 3),
-                            PurchaseDate = GetDateValue(worksheet, row, 4),
-                            PaymentDate = GetDateValue(worksheet, row, 5),
+                            PurchaseDate = GetDateStringValue(worksheet, row, 4),
+                            PaymentDate = GetDateStringValue(worksheet, row, 5),
                             CheckNumber = GetCellValue(worksheet, row, 6),
                             DebtorName = GetCellValue(worksheet, row, 7),
                             FeeDays = GetIntValue(worksheet, row, 8),
@@ -133,7 +133,7 @@ public class ExcelImportService
                             ActivityType = GetCellValue(worksheet, row, 10),
                             CheckAmount = GetDecimalValue(worksheet, row, 11),
                             SheetName = worksheet.Name,
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
                         };
 
                         _context.Payments.Add(payment);
@@ -183,7 +183,7 @@ public class ExcelImportService
         }
     }
 
-    private DateTime? GetDateValue(ExcelWorksheet worksheet, int row, int col)
+    private string? GetDateStringValue(ExcelWorksheet worksheet, int row, int col)
     {
         try
         {
@@ -205,18 +205,8 @@ public class ExcelImportService
                 return null;
             }
 
-            // PostgreSQL requires UTC for timestamp with time zone
-            // Convert Unspecified DateTimes to UTC
-            if (dateTime.Kind == DateTimeKind.Unspecified)
-            {
-                dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-            }
-            else if (dateTime.Kind == DateTimeKind.Local)
-            {
-                dateTime = dateTime.ToUniversalTime();
-            }
-
-            return dateTime;
+            // Return date as string in ISO format
+            return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
         catch
         {
