@@ -190,13 +190,33 @@ public class ExcelImportService
             var value = worksheet.Cells[row, col].Value;
             if (value == null) return null;
 
-            if (value is DateTime dateTime)
-                return dateTime;
+            DateTime dateTime;
 
-            if (DateTime.TryParse(value.ToString(), out DateTime parsed))
-                return parsed;
+            if (value is DateTime dt)
+            {
+                dateTime = dt;
+            }
+            else if (DateTime.TryParse(value.ToString(), out DateTime parsed))
+            {
+                dateTime = parsed;
+            }
+            else
+            {
+                return null;
+            }
 
-            return null;
+            // PostgreSQL requires UTC for timestamp with time zone
+            // Convert Unspecified DateTimes to UTC
+            if (dateTime.Kind == DateTimeKind.Unspecified)
+            {
+                dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            }
+            else if (dateTime.Kind == DateTimeKind.Local)
+            {
+                dateTime = dateTime.ToUniversalTime();
+            }
+
+            return dateTime;
         }
         catch
         {
