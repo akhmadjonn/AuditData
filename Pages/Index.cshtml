@@ -1,10 +1,112 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Excel File Upload";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <h1 class="mb-4">Excel File Upload</h1>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Upload Spreadsheets File</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Upload Excel files containing spreadsheet data. Only the first sheet (Unique) will be imported.</p>
+                    <form id="spreadsheetsForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="spreadsheetsFile" accept=".xlsx,.xls" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm d-none" id="spreadsheetsSpinner"></span>
+                            Upload Spreadsheets
+                        </button>
+                    </form>
+                    <div id="spreadsheetsResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Upload Payments File</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Upload Excel files containing payment data. All sheets will be imported with sheet names tracked.</p>
+                    <form id="paymentsForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="paymentsFile" accept=".xlsx,.xls" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <span class="spinner-border spinner-border-sm d-none" id="paymentsSpinner"></span>
+                            Upload Payments
+                        </button>
+                    </form>
+                    <div id="paymentsResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('spreadsheetsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await uploadFile('spreadsheets', 'spreadsheetsFile', 'spreadsheetsResult', 'spreadsheetsSpinner');
+        });
+
+        document.getElementById('paymentsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await uploadFile('payments', 'paymentsFile', 'paymentsResult', 'paymentsSpinner');
+        });
+
+        async function uploadFile(endpoint, fileInputId, resultDivId, spinnerId) {
+            const fileInput = document.getElementById(fileInputId);
+            const resultDiv = document.getElementById(resultDivId);
+            const spinner = document.getElementById(spinnerId);
+
+            if (!fileInput.files[0]) {
+                showMessage(resultDiv, 'Please select a file.', 'danger');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                spinner.classList.remove('d-none');
+                resultDiv.innerHTML = '';
+
+                const response = await fetch(`/api/fileupload/${endpoint}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage(resultDiv, `${result.message} (${result.recordsImported} records)`, 'success');
+                    fileInput.value = '';
+                } else {
+                    showMessage(resultDiv, result.message, 'danger');
+                }
+            } catch (error) {
+                showMessage(resultDiv, 'An error occurred while uploading the file.', 'danger');
+                console.error('Error:', error);
+            } finally {
+                spinner.classList.add('d-none');
+            }
+        }
+
+        function showMessage(element, message, type) {
+            element.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+        }
+    </script>
+}
