@@ -25,7 +25,7 @@
                     <button class="btn btn-success" onclick="downloadReport('already-paid-orders')">
                         <i class="bi bi-download"></i> Download Report
                     </button>
-                    <div id="already-paid-status" class="mt-2"></div>
+                    <div id="already-paid-orders-status" class="mt-2"></div>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                     <button class="btn btn-warning" onclick="downloadReport('short-paid-orders')">
                         <i class="bi bi-download"></i> Download Report
                     </button>
-                    <div id="short-paid-status" class="mt-2"></div>
+                    <div id="short-paid-orders-status" class="mt-2"></div>
                 </div>
             </div>
         </div>
@@ -66,7 +66,7 @@
                     <button class="btn btn-danger" onclick="downloadReport('charge-back-orders')">
                         <i class="bi bi-download"></i> Download Report
                     </button>
-                    <div id="charge-back-status" class="mt-2"></div>
+                    <div id="charge-back-orders-status" class="mt-2"></div>
                 </div>
             </div>
         </div>
@@ -87,7 +87,7 @@
                     <button class="btn btn-secondary" onclick="downloadReport('unpaid-orders')">
                         <i class="bi bi-download"></i> Download Report
                     </button>
-                    <div id="unpaid-status" class="mt-2"></div>
+                    <div id="unpaid-orders-status" class="mt-2"></div>
                 </div>
             </div>
         </div>
@@ -97,21 +97,39 @@
 @section Scripts {
     <script>
         async function downloadReport(reportType) {
+            console.log('downloadReport called with:', reportType);
+
             const statusElementId = reportType + '-status';
             const statusElement = document.getElementById(statusElementId);
 
+            if (!statusElement) {
+                console.error('Status element not found:', statusElementId);
+                alert('Error: Status element not found. Please refresh the page.');
+                return;
+            }
+
             try {
+                console.log('Starting report generation...');
                 statusElement.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> Generating report...';
 
-                const response = await fetch(`/api/reports/${reportType}`, {
+                const apiUrl = `/api/reports/${reportType}`;
+                console.log('Fetching from:', apiUrl);
+
+                const response = await fetch(apiUrl, {
                     method: 'GET'
                 });
 
+                console.log('Response status:', response.status);
+
                 if (!response.ok) {
-                    throw new Error('Failed to generate report');
+                    const errorText = await response.text();
+                    console.error('Response error:', errorText);
+                    throw new Error(`Failed to generate report: ${response.status}`);
                 }
 
                 const blob = await response.blob();
+                console.log('Blob received, size:', blob.size);
+
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -126,6 +144,7 @@
                     }
                 }
 
+                console.log('Downloading file:', filename);
                 a.download = filename;
                 document.body.appendChild(a);
                 a.click();
@@ -135,9 +154,12 @@
                 statusElement.innerHTML = '<div class="alert alert-success">Report downloaded successfully!</div>';
                 setTimeout(() => { statusElement.innerHTML = ''; }, 3000);
             } catch (error) {
-                statusElement.innerHTML = '<div class="alert alert-danger">Error generating report. Please try again.</div>';
-                console.error('Error:', error);
+                console.error('Error in downloadReport:', error);
+                statusElement.innerHTML = '<div class="alert alert-danger">Error generating report: ' + error.message + '</div>';
             }
         }
+
+        // Test that script is loaded
+        console.log('Reports page script loaded successfully');
     </script>
 }
