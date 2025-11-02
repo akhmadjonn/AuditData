@@ -18,6 +18,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Add Excel import service
 builder.Services.AddScoped<ExcelImportService>();
 
+// Add Excel report service
+builder.Services.AddScoped<ExcelReportService>();
+
 // Add controllers for API endpoints
 builder.Services.AddControllers();
 

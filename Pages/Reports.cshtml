@@ -1,0 +1,143 @@
+@page
+@model ReportsModel
+@{
+    ViewData["Title"] = "Generate Reports";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Generate Excel Reports</h1>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">1. Already Paid Orders</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Orders that have been fully paid based on:
+                    </p>
+                    <ul>
+                        <li>Matched in <strong>Pmt</strong> sheet by Load Number</li>
+                        <li>Matched in <strong>NF</strong> sheet by Invoice Number</li>
+                        <li>Matched in <strong>OP SP</strong> sheet with full payment</li>
+                    </ul>
+                    <button class="btn btn-success" onclick="downloadReport('already-paid-orders')">
+                        <i class="bi bi-download"></i> Download Report
+                    </button>
+                    <div id="already-paid-status" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">2. Short Paid Orders</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Orders where payment amount is less than invoiced amount:
+                    </p>
+                    <ul>
+                        <li>Matched in <strong>OP SP</strong> sheet</li>
+                        <li>Payment amount &lt; Invoiced amount</li>
+                    </ul>
+                    <button class="btn btn-warning" onclick="downloadReport('short-paid-orders')">
+                        <i class="bi bi-download"></i> Download Report
+                    </button>
+                    <div id="short-paid-status" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">3. Charge Back Orders</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Orders with chargebacks:
+                    </p>
+                    <ul>
+                        <li>Matched in <strong>CB</strong> sheet by Load Number</li>
+                    </ul>
+                    <button class="btn btn-danger" onclick="downloadReport('charge-back-orders')">
+                        <i class="bi bi-download"></i> Download Report
+                    </button>
+                    <div id="charge-back-status" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">4. Unpaid Orders</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Orders not included in any of the above categories:
+                    </p>
+                    <ul>
+                        <li>No matching payment records found</li>
+                        <li>Not paid, short paid, or charged back</li>
+                    </ul>
+                    <button class="btn btn-secondary" onclick="downloadReport('unpaid-orders')">
+                        <i class="bi bi-download"></i> Download Report
+                    </button>
+                    <div id="unpaid-status" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function downloadReport(reportType) {
+            const statusElementId = reportType + '-status';
+            const statusElement = document.getElementById(statusElementId);
+
+            try {
+                statusElement.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> Generating report...';
+
+                const response = await fetch(`/api/reports/${reportType}`, {
+                    method: 'GET'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate report');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+
+                // Extract filename from Content-Disposition header or use default
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `${reportType}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                    if (filenameMatch) {
+                        filename = filenameMatch[1];
+                    }
+                }
+
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                statusElement.innerHTML = '<div class="alert alert-success">Report downloaded successfully!</div>';
+                setTimeout(() => { statusElement.innerHTML = ''; }, 3000);
+            } catch (error) {
+                statusElement.innerHTML = '<div class="alert alert-danger">Error generating report. Please try again.</div>';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+}
