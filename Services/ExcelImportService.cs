@@ -44,18 +44,14 @@ public class ExcelImportService
             {
                 try
                 {
-                    // Skip empty rows by checking key fields
-                    var loadId = GetCellValue(worksheet, row, 3);
-                    var broker = GetCellValue(worksheet, row, 2);
-
-                    // If both LoadId and Broker are empty, skip this row
-                    if (string.IsNullOrWhiteSpace(loadId) && string.IsNullOrWhiteSpace(broker))
+                    // Skip row only if ALL columns are empty (columns 2-15)
+                    if (IsRowEmpty(worksheet, row, 2, 15))
                         continue;
 
                     var spreadsheet = new Spreadsheet
                     {
-                        Broker = broker,
-                        LoadId = loadId,
+                        Broker = GetCellValue(worksheet, row, 2),
+                        LoadId = GetCellValue(worksheet, row, 3),
                         PUDate = GetDateStringValue(worksheet, row, 4),
                         Origin = GetCellValue(worksheet, row, 5),
                         DELDate = GetDateStringValue(worksheet, row, 6),
@@ -123,14 +119,13 @@ public class ExcelImportService
                 {
                     try
                     {
-                        // Skip empty rows
-                        var invoiceNumber = GetCellValue(worksheet, row, 2);
-                        if (string.IsNullOrWhiteSpace(invoiceNumber))
+                        // Skip row only if ALL columns are empty (columns 2-11)
+                        if (IsRowEmpty(worksheet, row, 2, 11))
                             continue;
 
                         var payment = new Payment
                         {
-                            InvoiceNumber = invoiceNumber,
+                            InvoiceNumber = GetCellValue(worksheet, row, 2),
                             LoadNumber = GetCellValue(worksheet, row, 3),
                             PurchaseDate = GetDateStringValue(worksheet, row, 4),
                             PaymentDate = GetDateStringValue(worksheet, row, 5),
@@ -176,6 +171,20 @@ public class ExcelImportService
             }
         }
         return -1;
+    }
+
+    private bool IsRowEmpty(ExcelWorksheet worksheet, int row, int startCol, int endCol)
+    {
+        // Check if all cells in the specified column range are empty
+        for (int col = startCol; col <= endCol; col++)
+        {
+            var value = worksheet.Cells[row, col].Value;
+            if (value != null && !string.IsNullOrWhiteSpace(value.ToString()))
+            {
+                return false; // Found at least one non-empty cell
+            }
+        }
+        return true; // All cells are empty
     }
 
     private string? GetCellValue(ExcelWorksheet worksheet, int row, int col)
