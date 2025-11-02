@@ -137,10 +137,17 @@
                 // Extract filename from Content-Disposition header or use default
                 const contentDisposition = response.headers.get('Content-Disposition');
                 let filename = `${reportType}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
                 if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
-                    if (filenameMatch) {
-                        filename = filenameMatch[1];
+                    console.log('Content-Disposition header:', contentDisposition);
+
+                    // Try to extract filename from either format:
+                    // attachment; filename="file.xlsx"
+                    // attachment; filename="file.xlsx"; filename*=UTF-8''file.xlsx
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].replace(/['"]/g, '');
+                        console.log('Extracted filename:', filename);
                     }
                 }
 
