@@ -44,10 +44,18 @@ public class ExcelImportService
             {
                 try
                 {
+                    // Skip empty rows by checking key fields
+                    var loadId = GetCellValue(worksheet, row, 3);
+                    var broker = GetCellValue(worksheet, row, 2);
+
+                    // If both LoadId and Broker are empty, skip this row
+                    if (string.IsNullOrWhiteSpace(loadId) && string.IsNullOrWhiteSpace(broker))
+                        continue;
+
                     var spreadsheet = new Spreadsheet
                     {
-                        Broker = GetCellValue(worksheet, row, 2),
-                        LoadId = GetCellValue(worksheet, row, 3),
+                        Broker = broker,
+                        LoadId = loadId,
                         PUDate = GetDateStringValue(worksheet, row, 4),
                         Origin = GetCellValue(worksheet, row, 5),
                         DELDate = GetDateStringValue(worksheet, row, 6),
